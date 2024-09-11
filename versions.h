@@ -19,6 +19,7 @@
 #include <unistd.h>
 
 #include "sha256.h"
+#include <linux/limits.h>
 
 #define COMMENT_SIZE 80 /** < Longitud del comentario */
 #define HASH_SIZE 256 /**< Longitud del hash incluyendo NULL*/
