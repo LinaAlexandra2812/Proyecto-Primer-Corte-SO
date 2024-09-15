@@ -127,11 +127,35 @@ int add_new_version(file_version * v) {
 
 
 void list(char * filename) {
-
 	//Abre el la base de datos de versiones (versions.db)
 	//Muestra los registros cuyo nombre coincide con filename.
 	//Si filename es NULL, muestra todos los registros.
+	FILE * fp;
+	file_version r;
+	int cont;
+	fp = fopen(".versions/versions.db", "r");
 
+	if(fp == NULL){
+		return;
+	}
+
+	cont = 1;
+	//Leer hasta fin de archivo
+	while(!feof(fp)){
+		//Realizar una lectura y validar
+		if (fread(&r, sizeof(file_version), 1 , fp) != 1){
+			break;
+		}
+
+		//Si el registro corresponde al archivo buscado, imprimir 
+		//Comparación entre cadenas: strcmp
+		if (r.filename == filename){
+			printf("%d, %s, %s\n", cont, r.hash, r.comment);
+			cont = cont + 1;
+		}
+	}
+
+	fclose(fp);
 }
 
 char *get_file_hash(char * filename, char * hash) {
@@ -163,12 +187,43 @@ int version_exists(char * filename, char * hash) {
 }
 
 int get(char * filename, int version) {
-
-	file_version r;
-
 	//1. Abre la BD y busca el registro r que coincide con filename y version
 	//retrieve_file(r.hash, r.filename)
-	return 0;
+
+	FILE *fp;
+	file_version r;
+	int cont;
+
+	//Abrir el archivo ".versions/versions.db"
+	fp = fopen(".versions/versions.db", "r");
+
+	if(fp == NULL){
+		return;
+	}
+
+	cont = 1;
+
+	//Leer hasta fin de archivo
+	while (!feof(fp)){
+		//Realizar una lectura y validar
+		if (fread(&r, sizeof(file_version), 1, fp) != 1){
+			break;
+		}
+
+		//Buscar el archivo y la version solicitada
+		if(r.filename == filename){
+			if (cont == version){
+				//Copiar el archivo
+				copy(r.hash, r.filename); //Preguntar
+				break;
+			} else {
+				//Buscar la siguiente version
+				cont = cont + 1;
+			}
+		}
+	}
+
+	fclose(fp);
 }
 
 
