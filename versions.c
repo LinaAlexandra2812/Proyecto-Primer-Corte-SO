@@ -39,6 +39,15 @@ return_code create_version(char * filename, char * comment, file_version * resul
 }
 
 /**
+ * @brief Obtiene el hash de un archivo.
+ * @param filename Nombre del archivo a obtener el hash
+ * @param hash Buffer para almacenar el hash (HASH_SIZE)
+ * @return Referencia al buffer, NULL si ocurre error
+ */
+char *get_file_hash(char * filename, char * hash);
+
+
+/**
  * @brief Función para inicializar el sistema de versionado
  * Crea el directorio .versions y el archivo versions.db si no existen.
  */
@@ -71,14 +80,6 @@ void init_versioning_system(){
  * @return 1 si la version existe, 0 en caso contrario.
  */
 int version_exists(char * filename, char * hash);
-
-/**
- * @brief Obtiene el hash de un archivo.
- * @param filename Nombre del archivo a obtener el hash
- * @param hash Buffer para almacenar el hash (HASH_SIZE)
- * @return Referencia al buffer, NULL si ocurre error
- */
-char *get_file_hash(char * filename, char * hash);
 
 /**
  * @brief Copia un archivo
