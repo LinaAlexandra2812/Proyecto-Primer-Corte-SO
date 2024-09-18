@@ -7,6 +7,7 @@
 
 #include "versions.h"
 
+
 /**
  * @brief Crea una version en memoria del archivo
  * Valida si el archivo especificado existe y crea su hash
@@ -113,20 +114,32 @@ return_code add(char * filename, char * comment) {
 	// 1. Crea la nueva version en memoria
 	// Si la operacion falla, retorna VERSION_ERROR
 	// create_version(filename, comment, &v)
+	if(create_version(filename, comment, &v) != VERSION_ADDED){
+		return VERSION_ERROR;
+	}
 
 	// 2. Verifica si ya existe una version con el mismo hash
 	// Retorna VERSION_ALREADY_EXISTS si ya existe
 	//version_exists(filename, v.hash)
+	if(version_exist(filename, v.hash)){
+		return VERSION_ALREADY_EXISTS;
+	}
 
 	// 3. Almacena el archivo en el repositorio.
 	// El nombre del archivo dentro del repositorio es su hash (sin extension)
 	// Retorna VERSION_ERROR si la operacion falla
 	//store_file(filename, v.hash)
+	if(store_file(filename, v.hash)){
+		return VERSION_ALREADY_EXISTS;
+	}
 
 	// 4. Agrega un nuevo registro al archivo versions.db
 	// Si no puede adicionar el registro, se debe borrar el archivo almacenado en el paso anterior
 	// Si la operacion falla, retorna VERSION_ERROR
 	//add_new_version(&v)
+	if(add_new_version(&v) != VERSION_ADDED){
+		return VERSION_ERROR;
+	}
 
 	// Si la operacion es exitosa, retorna VERSION_ADDED
 	return VERSION_ERROR;
