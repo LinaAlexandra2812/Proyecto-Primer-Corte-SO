@@ -17,7 +17,50 @@
  *
  * @return Resultado de la operacion
  */
-return_code create_version(char * filename, char * comment, file_version * result);
+return_code create_version(char * filename, char * comment, file_version * result){
+	struct stat s;
+
+	//Verifica si el archivo existe y es regular
+	if(stat(filename, &s) < 0 || !S_ISREG(s.st_mode)){
+		perror("El archivo no existe o no es un archivo regular");
+		return VERSION_ERROR;
+	}
+
+	//Obtener el hash del archivo
+	if(!get_file_hash(filename, result->hash)){
+		return VERSION_ERROR;
+	}
+
+	//Llenar la estructura de la versión
+	strncpy(result->filename, filename, PATH_MAX);
+	strncpy(result->comment, comment, COMMENT_SIZE);
+
+	return VERSION_CREATED;
+}
+
+/**
+ * @brief Función para inicializar el sistema de versionado
+ * Crea el directorio .versions y el archivo versions.db si no existen.
+ */
+void init_versioning_system(){
+	struct stat st = {0};
+
+	//Verifica si el directorio existe
+	if(stat(VERSIONS_DIR, &st)==-1){
+		if(mkdir(VERSIONS_DIR, 0700) != 0){
+			perror("Error al crear el directorio .versions");
+			exit(EXIT_FAILURE);
+		}
+		printf("Directorio '.versions' creado.\n");
+	}
+	FILE *db = fopen(VERSIONS_DB_PATH, "a");
+	if(!db){
+		perror("Error al crear el archivo versions.db");
+		exit(EXIT_FAILURE);
+	}
+	fclose(db);
+	printf("Archivo 'veriosn.db' creado\n");
+}
 
 /**
  * @brief Verifica si existe una version para un archivo
