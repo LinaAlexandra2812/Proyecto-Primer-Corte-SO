@@ -84,7 +84,7 @@ int retrieve_file(char * hash, char * filename);
  */
 int add_new_version(file_version * v);
 
-
+//Implementación -----------------------------------------------------------
 return_code create_version(char * filename, char * comment, file_version * result){
 	struct stat s;
 
