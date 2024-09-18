@@ -196,7 +196,7 @@ void list(char * filename) {
 
 		//Si el registro corresponde al archivo buscado, imprimir 
 		//Comparación entre cadenas: strcmp
-		if (r.filename == filename){
+		if (strcmp(r.filename,filename) == 0){
 			printf("%d, %s, %s\n", cont, r.hash, r.comment);
 			cont = cont + 1;
 		}
@@ -225,6 +225,42 @@ char *get_file_hash(char * filename, char * hash) {
 
 int copy(char * source, char * destination) {
 	// Copia el contenido de source a destination (se debe usar open-read-write-close, o fopen-fread-fwrite-fclose)
+	FILE *f, *df;
+	char buf[1024];
+	size_t bytes_leidos; // Cantidad de bytes leidos
+
+	//Abrir el archivo fuente
+	f = fopen(source, "r");
+	if(f == NULL){
+		perror("Error al abrir el archivo fuente");
+		exit(EXIT_FAILURE);
+	}
+
+	//Abrir el archivo destino
+	df = fopen(destination, "w");
+	if (df == NULL){
+		perror("Error al abrir el archivo destino");
+		fclose(f); //Se cierra el archivo fuente si no se abre el archivo destino
+		return 1;
+	}
+
+	//Leer determinada cantidad de bytes en buf
+	//Copiar a destino, mientras no sea fin de archivo
+	//TODO dependiendo de la familia usada, se debe verificar que se hayan leido datos
+
+	while ((bytes_leidos = fread(buf, 1, sizeof(buf),f)) > 0){
+		if (fwrite(buf, 1,bytes_leidos, df) != bytes_leidos){
+			perror("Error al escribir en el archivo destino");
+			fclose(f);
+			fclose(df);
+			return 1;
+		}
+	}
+
+	fclose(f);
+	fclose(df);
+
+	return 0; //Retorna 0 indicando que la operación fue exitosa
 }
 
 int version_exists(char * filename, char * hash) {
@@ -258,10 +294,10 @@ int get(char * filename, int version) {
 		}
 
 		//Buscar el archivo y la version solicitada
-		if(r.filename == filename){
+		if(strcmp(r.filename,filename) == 0){
 			if (cont == version){
 				//Copiar el archivo
-				copy(r.hash, r.filename); //Preguntar
+				retrieve_file(r.hash, r.filename);
 				break;
 			} else {
 				//Buscar la siguiente version
