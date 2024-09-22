@@ -109,40 +109,40 @@ return_code create_version(char * filename, char * comment, file_version * resul
 
 return_code add(char * filename, char * comment) {
 
-	file_version v;
+    file_version v;
 
-	// 1. Crea la nueva version en memoria
-	// Si la operacion falla, retorna VERSION_ERROR
-	// create_version(filename, comment, &v)
-	if(create_version(filename, comment, &v) != VERSION_ADDED){
-		return VERSION_ERROR;
-	}
+    // 1. Crea la nueva version en memoria
+    // Si la operacion falla, retorna VERSION_ERROR
+    // create_version(filename, comment, &v)
+    if(create_version(filename, comment, &v) != VERSION_ADDED){
+        return VERSION_ERROR;
+    }
 
-	// 2. Verifica si ya existe una version con el mismo hash
-	// Retorna VERSION_ALREADY_EXISTS si ya existe
-	//version_exists(filename, v.hash)
-	if(version_exist(filename, v.hash)){
-		return VERSION_ALREADY_EXISTS;
-	}
+    // 2. Verifica si ya existe una version con el mismo hash
+    // Retorna VERSION_ALREADY_EXISTS si ya existe
+    //version_exists(filename, v.hash)
+    if(version_exists(filename, v.hash)){
+        return VERSION_ALREADY_EXISTS;
+    }
 
-	// 3. Almacena el archivo en el repositorio.
-	// El nombre del archivo dentro del repositorio es su hash (sin extension)
-	// Retorna VERSION_ERROR si la operacion falla
-	//store_file(filename, v.hash)
-	if(store_file(filename, v.hash)){
-		return VERSION_ALREADY_EXISTS;
-	}
+    // 3. Almacena el archivo en el repositorio.
+    // El nombre del archivo dentro del repositorio es su hash (sin extension)
+    // Retorna VERSION_ERROR si la operacion falla
+    //store_file(filename, v.hash)
+    if(store_file(filename, v.hash)){
+        return VERSION_ERROR;
+    }
 
-	// 4. Agrega un nuevo registro al archivo versions.db
-	// Si no puede adicionar el registro, se debe borrar el archivo almacenado en el paso anterior
-	// Si la operacion falla, retorna VERSION_ERROR
-	//add_new_version(&v)
-	if(add_new_version(&v) != VERSION_ADDED){
-		return VERSION_ERROR;
-	}
+    // 4. Agrega un nuevo registro al archivo versions.db
+    // Si no puede adicionar el registro, se debe borrar el archivo almacenado en el paso anterior
+    // Si la operacion falla, retorna VERSION_ERROR
+    //add_new_version(&v)
+    if(add_new_version(&v) != VERSION_ADDED){
+        return VERSION_ERROR;
+    }
 
-	// Si la operacion es exitosa, retorna VERSION_ADDED
-	return VERSION_ERROR;
+    // Si la operacion es exitosa, retorna VERSION_ADDED
+    return VERSION_ADDED;
 }
 
 void init_versioning_system(){
@@ -167,9 +167,21 @@ void init_versioning_system(){
 
 int add_new_version(file_version * v) {
 	FILE * fp;
+	//Abrir el archivo "versions.db" en modo de escritura
+	fp = fopen(".versions/versions.db", "a");
+	
+	if(fp == NULL){
+		return VERSION_ERROR;
+	}
 
-	// Adiciona un nuevo registro (estructura) al archivo versions.db
-	return 0;
+	//Escribe la nueva versión en el archivo
+	if(fwrite(v, sizeof(file_version), 1, fp) != 1){
+		fclose(fp);
+		return VERSION_ERROR;
+	}
+
+	fclose(fp);
+	return VERSION_ADDED;
 }
 
 
@@ -265,8 +277,26 @@ int copy(char * source, char * destination) {
 
 int version_exists(char * filename, char * hash) {
 
-	// Verifica si en la bd existe un registro que coincide con filename y hash
-	return 1;
+	FILE *fp;
+	file_version r;
+
+	//Abrir el archivo ".versions/versions.db" en modo lectura
+	fp = fopen(".versions/versions.db", "r");
+
+	if(fp == NULL){
+		return 0;
+	}
+
+	while(fread(&r, sizeof(file_version), 1, fp) == 1){
+		//Comparar el nombre del archivo y el hash
+		if(strcmp(r.filename, filename) == 0 && strcmp(r.hash, hash) == 0){
+			fclose(fp);
+			return 1;
+		}
+	}
+
+	fclose(fp);
+	return 0;
 }
 
 int get(char * filename, int version) {
@@ -281,7 +311,7 @@ int get(char * filename, int version) {
 	fp = fopen(".versions/versions.db", "r");
 
 	if(fp == NULL){
-		return;
+		return 0;
 	}
 
 	cont = 1;
@@ -298,10 +328,9 @@ int get(char * filename, int version) {
 			if (cont == version){
 				//Copiar el archivo
 				retrieve_file(r.hash, r.filename);
-				break;
 			} else {
 				//Buscar la siguiente version
-				cont = cont + 1;
+				cont = cont;
 			}
 		}
 	}

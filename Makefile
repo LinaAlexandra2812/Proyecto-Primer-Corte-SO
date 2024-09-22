@@ -20,7 +20,6 @@ clean-repo:
 doc:
 	doxygen
 
-
 install: all
 	sudo cp versions /usr/local/bin
 
