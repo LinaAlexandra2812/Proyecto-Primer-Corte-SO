@@ -21,12 +21,6 @@
 return_code create_version(char * filename, char * comment, file_version * result);
 
 /**
- * @brief Función para inicializar el sistema de versionado
- * Crea el directorio .versions y el archivo versions.db si no existen.
- */
-void init_versioning_system();
-
-/**
  * @brief Obtiene el hash de un archivo.
  * @param filename Nombre del archivo a obtener el hash
  * @param hash Buffer para almacenar el hash (HASH_SIZE)
@@ -145,26 +139,6 @@ return_code add(char * filename, char * comment) {
     return VERSION_ADDED;
 }
 
-void init_versioning_system(){
-	struct stat st = {0};
-
-	//Verifica si el directorio existe
-	if(stat(VERSIONS_DIR, &st)==-1){
-		if(mkdir(VERSIONS_DIR, 0700) != 0){
-			perror("Error al crear el directorio .versions");
-			exit(EXIT_FAILURE);
-		}
-		printf("Directorio '.versions' creado.\n");
-	}
-	FILE *db = fopen(VERSIONS_DB_PATH, "a");
-	if(!db){
-		perror("Error al crear el archivo versions.db");
-		exit(EXIT_FAILURE);
-	}
-	fclose(db);
-	printf("Archivo 'veriosn.db' creado\n");
-}
-
 int add_new_version(file_version * v) {
 	FILE * fp;
 	//Abrir el archivo "versions.db" en modo de escritura
@@ -191,29 +165,24 @@ void list(char * filename) {
 	//Si filename es NULL, muestra todos los registros.
 	FILE * fp;
 	file_version r;
-	int cont;
-	fp = fopen(".versions/versions.db", "r");
+	int cont = 1;
 
+	//Abrir el archivo ".versions/versions.db" en modo lectura
+	fp = fopen(".versions/versions.db", "r");
 	if(fp == NULL){
+		perror("Error al abrir el archivo versions.db");
 		return;
 	}
 
-	cont = 1;
 	//Leer hasta fin de archivo
-	while(!feof(fp)){
-		//Realizar una lectura y validar
-		if (fread(&r, sizeof(file_version), 1 , fp) != 1){
-			break;
-		}
-
-		//Si el registro corresponde al archivo buscado, imprimir 
-		//Comparación entre cadenas: strcmp
-		if (strcmp(r.filename,filename) == 0){
-			printf("%d, %s, %s\n", cont, r.hash, r.comment);
-			cont = cont + 1;
-		}
-	}
-
+	while (fread(&r, sizeof(file_version), 1, fp) == 1) {
+        // Si filename es NULL, mostrar todos los registros
+        // Si filename no es NULL, mostrar solo los registros que coinciden
+        if (filename == NULL || strcmp(r.filename, filename) == 0) {
+            printf("%d, %s, %s\n", cont, r.hash, r.comment);
+            cont++;
+        }
+    }
 	fclose(fp);
 }
 
