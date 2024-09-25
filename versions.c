@@ -1,3 +1,4 @@
+//Comentario prueba
 /**
  * @file
  * @brief Implementacion del API de gestion de versiones
@@ -83,16 +84,18 @@ int add_new_version(file_version * v);
 return_code create_version(char * filename, char * comment, file_version * result){
 	struct stat s;
 
-	//Verifica si el archivo existe y es regular
-	if(stat(filename, &s) < 0 || !S_ISREG(s.st_mode)){
-		perror("El archivo no existe o no es un archivo regular");
-		return VERSION_ERROR;
-	}
+	// Verifica si el archivo existe y es regular
+    if(stat(filename, &s) < 0 || !S_ISREG(s.st_mode)){
+        printf("El archivo no existe o no es un archivo regular\n");
+        return VERSION_ERROR;
+    }
 
-	//Obtener el hash del archivo
-	if(!get_file_hash(filename, result->hash)){
-		return VERSION_ERROR;
-	}
+    // Obtener el hash del archivo
+    if (!get_file_hash(filename, result->hash)) {
+        printf("Error al obtener el hash del archivo\n");
+        return VERSION_ERROR;
+    }
+
 
 	//Llenar la estructura de la versión
 	strncpy(result->filename, filename, PATH_MAX);
@@ -108,14 +111,16 @@ return_code add(char * filename, char * comment) {
     // 1. Crea la nueva version en memoria
     // Si la operacion falla, retorna VERSION_ERROR
     // create_version(filename, comment, &v)
-    if(create_version(filename, comment, &v) != VERSION_ADDED){
+    if(create_version(filename, comment, &v) != VERSION_CREATED){
         return VERSION_ERROR;
     }
 
     // 2. Verifica si ya existe una version con el mismo hash
     // Retorna VERSION_ALREADY_EXISTS si ya existe
     //version_exists(filename, v.hash)
+	printf("Verificando si la version ya existe...\n");
     if(version_exists(filename, v.hash)){
+		printf("La version ya existe\n");
         return VERSION_ALREADY_EXISTS;
     }
 
@@ -123,7 +128,9 @@ return_code add(char * filename, char * comment) {
     // El nombre del archivo dentro del repositorio es su hash (sin extension)
     // Retorna VERSION_ERROR si la operacion falla
     //store_file(filename, v.hash)
+	printf("Almacenando el archivo en el repositorio...\n");
     if(store_file(filename, v.hash)){
+		printf("Error al almacenar el archivo en el repositorio\n");
         return VERSION_ERROR;
     }
 
@@ -131,7 +138,9 @@ return_code add(char * filename, char * comment) {
     // Si no puede adicionar el registro, se debe borrar el archivo almacenado en el paso anterior
     // Si la operacion falla, retorna VERSION_ERROR
     //add_new_version(&v)
+	printf("Agregando nueva version en versions.db...\n");
     if(add_new_version(&v) != VERSION_ADDED){
+		printf("Error al agregar nueva version en versions.db\n");
         return VERSION_ERROR;
     }
 
@@ -305,6 +314,7 @@ int get(char * filename, int version) {
 	}
 
 	fclose(fp);
+	return 1;
 }
 
 
