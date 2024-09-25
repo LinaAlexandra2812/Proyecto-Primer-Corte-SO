@@ -188,7 +188,7 @@ void list(char * filename) {
         // Si filename es NULL, mostrar todos los registros
         // Si filename no es NULL, mostrar solo los registros que coinciden
         if (filename == NULL || strcmp(r.filename, filename) == 0) {
-            printf("%d, %s, %s\n", cont, r.hash, r.comment);
+            printf("%d. %s, %s, %s\n", cont, r.hash, r.filename, r.comment);
             cont++;
         }
     }
