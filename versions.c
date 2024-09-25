@@ -296,6 +296,7 @@ int get(char * filename, int version) {
 
 	//Leer hasta fin de archivo
 	while (!feof(fp)){
+		
 		//Realizar una lectura y validar
 		if (fread(&r, sizeof(file_version), 1, fp) != 1){
 			break;
@@ -306,15 +307,16 @@ int get(char * filename, int version) {
 			if (cont == version){
 				//Copiar el archivo
 				retrieve_file(r.hash, r.filename);
+				return 1;
 			} else {
 				//Buscar la siguiente version
-				cont = cont;
+				cont++;
 			}
 		}
 	}
 
 	fclose(fp);
-	return 1;
+	
 }
 
 
